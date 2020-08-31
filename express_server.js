@@ -11,8 +11,9 @@ const urlDatabase = {
   gOog: 'http://www.google.com',
 };
 
-app.get('/', (req, res) => {
-  res.render('pages/index');
+app.get('/urls/:shortURL', (req, res) => {
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  res.render('pages/urls_show', templateVars);
 });
 
 app.get('/urls', (req, res) => {
