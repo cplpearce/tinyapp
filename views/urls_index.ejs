@@ -6,6 +6,8 @@
 
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Alata&display=swap" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="css/style.css" />
   <title>TinyApp</title>
 </head>
 <body>
@@ -23,7 +25,7 @@
       <tbody>
         <% for (let url in urls) { %>
           <tr>
-            <td><%= url %></td>
+            <td><a href="urls/<%= url %>"><%= url %></a></td>
             <td><a href="<%= urls[url] %>"><%= urls[url] %></a></td>
             <td><form method="POST" action="<%= url %>/delete"><button type="submit" class="btn btn-danger">Delete</button></form></td>
           </tr>

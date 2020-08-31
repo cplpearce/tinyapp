@@ -6,7 +6,10 @@ const PORT = 8080; // default port 8080
 
 // set the view engine to ejs
 app.set('view engine', 'ejs');
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static(__dirname + '/public'));
+// <link rel="stylesheet" type="text/css" href="css/style.css" />
+
 
 const urlDatabase = {
   lhl: 'https://www.lighthouselabs.ca',
@@ -50,8 +53,9 @@ app.post('/:shortURL/delete', (req, res) => {
   // eslint-disable-next-line no-console
   console.log(req.body); // Log the POST request body to the console
   delete urlDatabase[req.params.shortURL];
+  // eslint-disable-next-line no-console
   console.log(urlDatabase);
-  res.redirect(`/urls`);
+  res.redirect('/urls');
 });
 
 app.listen(PORT, () => {
