@@ -34,6 +34,7 @@ app.get('/urls/:shortURL', (req, res) => {
 
 app.get('/u/:shortURL', (req, res) => {
   // const longURL = ...
+  console.log(urlDatabase[req.params.shortURL])
   res.redirect(urlDatabase[req.params.shortURL]);
 });
 
@@ -41,9 +42,8 @@ app.post('/urls', (req, res) => {
   const shortCode = genRandomString();
   // eslint-disable-next-line no-console
   console.log(req.body); // Log the POST request body to the console
-  res.send('Ok'); // Respond with 'Ok' (we will replace this)
-  urlDatabase[shortCode] = req.body.longURL;
-  res.redirect(urlDatabase[shortCode]);
+  urlDatabase[shortCode] = (req.body.longURL.match(/^(https:\/\/|http:\/\/)/) ? res.redirect(`/urls/${shortCode}`) : urlDatabase[shortCode] = `https://${req.body.longURL}`);
+  res.redirect(`/urls/${shortCode}`);
 });
 
 app.listen(PORT, () => {
