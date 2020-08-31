@@ -7,16 +7,17 @@ const PORT = 8080; // default port 8080
 app.set('view engine', 'ejs');
 
 const urlDatabase = {
-  lhla: 'http://www.lighthouselabs.ca',
-  goog: 'http://www.google.com',
+  lhL: 'http://www.lighthouselabs.ca',
+  gOog: 'http://www.google.com',
 };
 
 app.get('/', (req, res) => {
   res.render('pages/index');
 });
 
-app.get('/urls.json', (req, res) => {
-  res.json(urlDatabase);
+app.get('/urls', (req, res) => {
+  const templateVars = { urls: urlDatabase };
+  res.render('pages/urls_index', templateVars);
 });
 
 app.get('/hello', (req, res) => {
