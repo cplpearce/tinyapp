@@ -1,6 +1,10 @@
 const express = require('express');
+
 const app = express();
 const PORT = 8080; // default port 8080
+
+// set the view engine to ejs
+app.set('view engine', 'ejs');
 
 const urlDatabase = {
   lhla: 'http://www.lighthouselabs.ca',
@@ -8,20 +12,11 @@ const urlDatabase = {
 };
 
 app.get('/', (req, res) => {
-  res.send('Hello!');
+  res.render('pages/index');
 });
 
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
-});
-
-app.get('/set', (req, res) => {
-  const a = 1;
-  res.send(`a = ${a}`);
-});
-
-app.get('/fetch', (req, res) => {
-  res.send(`a = ${a}`);
 });
 
 app.get('/hello', (req, res) => {
@@ -29,5 +24,6 @@ app.get('/hello', (req, res) => {
 });
 
 app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
   console.log(`Example app listening on port ${PORT}!`);
 });
