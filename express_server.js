@@ -16,7 +16,6 @@ const urlDatabase = {
   goo: 'https://www.google.com',
   imo: 'https://ombi.ironmantle.ca',
   imj: 'https://jellyfin.ironmantle.ca',
-
 };
 
 const genRandomString = () => Math.random().toString(36).substring(3).slice(-4);
@@ -53,6 +52,15 @@ app.post('/:shortURL/delete', (req, res) => {
   // eslint-disable-next-line no-console
   console.log(req.body); // Log the POST request body to the console
   delete urlDatabase[req.params.shortURL];
+  // eslint-disable-next-line no-console
+  console.log(urlDatabase);
+  res.redirect('/urls');
+});
+
+app.post('/:shortURL/update', (req, res) => {
+  // eslint-disable-next-line no-console
+  console.log(req.body); // Log the POST request body to the console
+  urlDatabase[req.params.shortURL] = 'test';
   // eslint-disable-next-line no-console
   console.log(urlDatabase);
   res.redirect('/urls');
