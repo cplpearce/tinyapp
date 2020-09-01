@@ -14,16 +14,18 @@
       <div class="card-body">
         <h5 class="card-title">TinyURL for: <a href="<%= longURL %>"><%= longURL %></a></h5>
         <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
-        <label for="readdress">
-        <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text" id="basic-addon1">URL</span>
+        <form class="form-inline justify-content-center mb-6" action="/<%= shortURL %>/update" method="POST">
+          <div class="input-group mb-3 col-md-auto">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="basic-addon1">URL</span>
+            </div>
+            <input type="text" class="form-control" name="newURL" placeholder="Edit URL" value="<%= longURL %>" style="width: 400px">
+            <div class="input-group-append">
+              <button class="btn btn-outline-success" method="POST" type="submit">Submit</button>
+            </div>
           </div>
-          <input type="text" class="form-control" placeholder="Edit URL" value="<%= longURL %>">
-          <div class="input-group-append">
-            <button class="btn btn-outline-success" method="POST" action="<%= shortURL %>/delete" type="submit">Submit</button>
-          </div>
-        </div>
+          
+        </form>
       </div>
     <div class="card-footer text-muted"></div>
   </div>
