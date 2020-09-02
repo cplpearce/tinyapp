@@ -1,34 +1,42 @@
+// eslint-disable-next-line max-classes-per-file
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 const app = express();
-const PORT = 8080; // default port 8080
+const PORT = 8080;
 
-// set the view engine to ejs
+// set app vars
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(`${__dirname}/public`));
+app.use('/img', express.static(`${__dirname}/public/img`));
+app.use(express.static('public'));
 app.use(cookieParser());
 
-// <link rel='stylesheet' type='text/css' href='css/style.css' />
-
+// function pile
 const validateURL = (url) => (url.match(/^(https:\/\/|http:\/\/)/) ? url : `https://${url}`);
-
 const genRandomString = () => Math.random().toString(36).substring(3).slice(-4);
+const hashPass = (str) => bcrypt.hash(str, 10).then((hash) => (hash));
 
-// to come back to later!
-// eslint-disable-next-line no-unused-vars
-class site {
-  constructor(code, name, url) {
-    this.code = genRandomString();
-    this.name = name;
-    this.url = url;
-    this.visits = 0;
+class User {
+  constructor(username, email, password) {
+    this.uid = genRandomString();
+    this.username = username;
+    this.email = email;
+    this.password = password;
     this.created = Date.now();
+    this.sites = {};
+  }
+
+  addSite(siteURL) {
+    this.sites[genRandomString] = {};
+    this.sites[genRandomString].url = siteURL;
+    this.sites[genRandomString].visits = 0;
+    this.sites[genRandomString].created = Date.now();
   }
 }
-
+const usersDB = {};
 const urlDatabase = {
   lhl: 'https://www.lighthouselabs.ca',
   goo: 'https://www.google.com',
@@ -63,6 +71,23 @@ app.get('/urls/:shortURL', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
+// register / generate cookie
+app.get('/register', (req, res) => {
+  const templateVars = {
+    username: req.cookies.username,
+  };
+  res.render('register', templateVars);
+});
+
+// create a new user
+app.post('/createUser', (req, res) => {
+  // req.body = { newUsername: 'X', email: 'Y', password: 'Z' }
+  usersDB[req.body.newUsername] = new User(req.body.newUsername,
+    req.body.email,
+    hashPass(req.body.password));
+  res.redirect('/urls');
+});
+
 // go to URL long
 app.get('/u/:shortURL', (req, res) => {
   res.redirect(urlDatabase[req.params.shortURL]);
@@ -89,7 +114,6 @@ app.post('/:shortURL/update', (req, res) => {
 
 // login / generate cookie
 app.post('/login', (req, res) => {
-  // res.send(`You're logging in as ${req.body.username}`);
   res.cookie('username', req.body.username);
   res.redirect('/urls');
 });

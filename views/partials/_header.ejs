@@ -1,7 +1,8 @@
 <header>
   <% if (!username) username = "Anonymous" %>
   <nav class="navbar navbar-expand-md navbar-dark bg-info">
-    <a class="navbar-brand" href="/urls">TinyApp</a>
+    <img src="/img/meat.png" width="30" height="30" alt="">
+    <a class="navbar-brand mx-1" href="/urls">Lil'Links</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -12,10 +13,10 @@
       </div>
     </div>
     <% if (username === "Anonymous") { %>
-      <form class="form-inline" method="POST" action="/login" >
+      <form class="form-inline" method="POST" action="/login">
         <div class="input-group">
           <div class="input-group-prepend">
-            <span class="input-group-text">Not Logged In!</span>
+            <span class="input-group-text">Not Logged In</span>
           </div>
           <input class="input-group form-control" name="username" type="login" placeholder="">
           <div class="input-group-append">
@@ -23,10 +24,16 @@
           </div>
         </div>
       </form>
+      <br>  
+      <form method="GET" action="/register">
+        <div class="px-2">
+          <button class="input-group btn btn-success" type="submit">Register</button>
+        </div>
+      </form>
     <% } else { %>
       <form class="form-inline" method="POST" action="/logout" >
         <div class="input-group">
-          <span class=" p-2">Logged in as: <%= username %></span>
+          <span class=" p-2"><small>Logged in as:</small> <%= username %></span>
         </div>
         <button class="input-group btn btn-warning" type="submit">Log Off</button>
       </form>
