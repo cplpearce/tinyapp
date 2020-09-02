@@ -18,19 +18,25 @@
     <table class="table">
       <thead>
         <tr>
-          <th scope="col-3">Short URL</th>
-          <th scope="col-3">Long URL</th>
-          <th scope="col-3">Edit URL</th>
-          <th scope="col-3">Delete</th>
+          <th scope="col">Short URL</th>
+          <th scope="col">Long URL</th>
+          <th scope="col">Edit URL</th>
+          <th scope="col">Delete</th>
+          <th scope="col">Visits</th>
+          <th scope="col">Created</th>
         </tr>
       </thead>
       <tbody>
-        <% for (let url in urls) { %>
+        <% for (let url in user.sites) { %>
           <tr class="align-middle">
             <td class="align-middle"><a href="urls/<%= url %>"><%= url %></a></td>
-            <td class="align-middle"><a href="<%= urls[url] %>"><%= urls[url] %></a></td>
+            <td class="align-middle"><a href="<%= user.sites[url].longURL %>"><%= user.sites[url].urlLong %></a></td>
             <td><a href="urls/<%= url %>"><button type="submit" class="btn btn-info">Edit</button></a></td>
             <td><form method="POST" action="<%= url %>/delete"><button type="submit" class="btn btn-danger">Delete</button></form></td>
+            <td class="align-middle"><%= user.sites[url].visits %></td>
+            <% const date = new Date(user.sites[url].created) %>
+            <% const dateF = `${date.getUTCDay()}/${date.getMonth()}/${date.getUTCFullYear()}/${date.getUTCHours()}:${('0' + date.getUTCSeconds()).slice(-2)}` %>
+            <td class="align-middle"><%= dateF %></td>
           </tr>
         <% } %>
       </tbody>

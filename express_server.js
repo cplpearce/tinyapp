@@ -17,14 +17,18 @@ app.use(cookieParser());
 // function pile
 const validateURL = (url) => (url.match(/^(https:\/\/|http:\/\/)/) ? url : `https://${url}`);
 const genRandomString = () => Math.random().toString(36).substring(3).slice(-4);
-const hashPass = (str) => bcrypt.hash(str, 10).then((hash) => (hash));
+const hashPass = (str) => {
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(str, salt);
+  return hash;
+};
 
 class User {
-  constructor(username, email, password) {
-    this.uid = genRandomString();
+  constructor(uid, username, email, passHash) {
+    this.uid = uid;
     this.username = username;
     this.email = email;
-    this.password = password;
+    this.passHash = passHash;
     this.created = Date.now();
     this.sites = {};
   }
@@ -36,27 +40,48 @@ class User {
     this.sites[genRandomString].created = Date.now();
   }
 }
-const usersDB = {};
-const urlDatabase = {
-  lhl: 'https://www.lighthouselabs.ca',
-  goo: 'https://www.google.com',
-  imo: 'https://ombi.ironmantle.ca',
-  imj: 'https://jellyfin.ironmantle.ca',
+
+const usersDB = {
+  u1ou: {
+    uid:'u1ou',
+    username: 'clinton',
+    email: 'clint.pearce@rocketmail.com',
+    passHash: hashPass('test'),
+    created: Date.now(),
+    sites: {
+      lhL: {
+        urlShort: 'lhL',
+        urlLong: 'https://www.lighthouselabs.ca',
+        visits: 0,
+        created: Date.now(),
+      },
+      goo: {
+        urlShort: 'goo',
+        urlLong: 'https://www.google.ca',
+        visits: 0,
+        created: Date.now(),
+      },
+    },
+  },
 };
 
 // list all URLs
 app.get('/urls', (req, res) => {
   const templateVars = {
-    urls: urlDatabase,
-    username: req.cookies.username,
+    user: usersDB[req.cookies.uid],
   };
   res.render('urls_index', templateVars);
+});
+
+// debug
+app.get('/debug', (req, res) => {
+  res.send(usersDB);
 });
 
 // create a new URL
 app.get('/urls/new', (req, res) => {
   const templateVars = {
-    username: req.cookies.username,
+    user: usersDB[req.cookies.uid],
   };
   res.render('urls_new', templateVars);
 });
@@ -64,9 +89,8 @@ app.get('/urls/new', (req, res) => {
 // examine a URL closer
 app.get('/urls/:shortURL', (req, res) => {
   const templateVars = {
+    user: usersDB[req.cookies.uid],
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies.username,
   };
   res.render('urls_show', templateVars);
 });
@@ -74,7 +98,7 @@ app.get('/urls/:shortURL', (req, res) => {
 // register / generate cookie
 app.get('/register', (req, res) => {
   const templateVars = {
-    username: req.cookies.username,
+    user: usersDB[req.cookies.uid],
   };
   res.render('register', templateVars);
 });
@@ -82,9 +106,13 @@ app.get('/register', (req, res) => {
 // create a new user
 app.post('/createUser', (req, res) => {
   // req.body = { newUsername: 'X', email: 'Y', password: 'Z' }
-  usersDB[req.body.newUsername] = new User(req.body.newUsername,
+  const uid = genRandomString();
+  usersDB[uid] = new User(
+    uid,
+    req.body.newUsername,
     req.body.email,
     hashPass(req.body.password));
+  res.cookie('uid', uid);
   res.redirect('/urls');
 });
 
@@ -96,7 +124,12 @@ app.get('/u/:shortURL', (req, res) => {
 // add a new URL
 app.post('/urls', (req, res) => {
   const shortCode = genRandomString();
-  urlDatabase[shortCode] = validateURL(req.body.longURL);
+  usersDB[req.cookies.uid].sites[shortCode] = {
+    urlShort: shortCode,
+    urlLong: validateURL(req.body.longURL),
+    visits: 0,
+    created: Date.now(),
+  };
   res.redirect(`/urls/${shortCode}`);
 });
 
@@ -108,13 +141,12 @@ app.post('/:shortURL/delete', (req, res) => {
 
 // update URL
 app.post('/:shortURL/update', (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.newURL;
+  usersDB[req.cookies.uid].sites[req.params.shortURL].urlLong = req.body.newURL;
   res.redirect('/urls');
 });
 
 // login / generate cookie
 app.post('/login', (req, res) => {
-  res.cookie('username', req.body.username);
   res.redirect('/urls');
 });
 

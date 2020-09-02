@@ -13,14 +13,14 @@
   <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
-        <h5 class="card-title">TinyURL for: <a href="<%= longURL %>"><%= longURL %></a></h5>
+        <h5 class="card-title">TinyURL for: <a href="<%= user.sites[shortURL].urlLong %>"><%= user.sites[shortURL].urlLong %></a></h5>
         <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
         <form class="form-inline justify-content-center mb-6" action="/<%= shortURL %>/update" method="POST">
           <div class="input-group mb-3 col-md-auto">
             <div class="input-group-prepend">
               <span class="input-group-text" id="basic-addon1">URL</span>
             </div>
-            <input type="text" class="form-control" name="newURL" placeholder="Edit URL" value="<%= longURL %>" style="width: 400px">
+            <input type="text" class="form-control" name="newURL" placeholder="Edit URL" value="<%= user.sites[shortURL].urlLong %>" style="width: 400px">
             <div class="input-group-append">
               <button class="btn btn-outline-success" method="POST" type="submit">Update URL</button>
             </div>

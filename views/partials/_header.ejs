@@ -1,5 +1,5 @@
 <header>
-  <% if (!username) username = "Anonymous" %>
+  <% if (!user.username) username = "Anonymous" %>
   <nav class="navbar navbar-expand-md navbar-dark bg-info">
     <img src="/img/meat.png" width="30" height="30" alt="">
     <a class="navbar-brand mx-1" href="/urls">Lil'Links</a>
@@ -12,7 +12,7 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <% if (username === "Anonymous") { %>
+    <% if (user.username === "Anonymous") { %>
       <form class="form-inline" method="POST" action="/login">
         <div class="input-group">
           <div class="input-group-prepend">
@@ -33,7 +33,7 @@
     <% } else { %>
       <form class="form-inline" method="POST" action="/logout" >
         <div class="input-group">
-          <span class=" p-2"><small>Logged in as:</small> <%= username %></span>
+          <span class=" p-2"><small>Logged in as:</small> <%= user.username %></span>
         </div>
         <button class="input-group btn btn-warning" type="submit">Log Off</button>
       </form>
