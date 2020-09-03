@@ -2,10 +2,14 @@
 console.clear();
 const express = require('express');
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const QuickEncrypt = require('quick-encrypt');
+const {
+  validateURL, genRandomString, dateParser, hashPass,
+} = require('./helperFunctions');
 
-const keys = QuickEncrypt.generate(2048); // Use either 2048 bits or 1024 bits.
+// 1GB key baby
+const keys = QuickEncrypt.generate(1024);
 const publicKey = keys.public;
 const privateKey = keys.private;
 
@@ -17,21 +21,13 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/img', express.static(`${__dirname}/public/img`));
 app.use(express.static('public'));
-app.use(cookieParser());
+app.set('trust proxy', 1);
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2'],
+}));
 
-// function pile
-const validateURL = (url) => (url.match(/^(https:\/\/|http:\/\/)/) ? url : `https://${url}`);
-const genRandomString = () => Math.random().toString(36).substring(3).slice(-4);
-const dateParser = (date) => {
-  const d = new Date(date);
-  return `${d.getUTCDay()}
-  /${d.getMonth()}
-  /${d.getFullYear()}
-  /${d.getHours()}
-  :${d.getMinutes()}
-  :${(`0${d.getSeconds()}`).slice(-2)}`.replace(/\s/g, '');
-};
-const hashPass = (str) => QuickEncrypt.encrypt(str, publicKey);
+// move to helpFunctions when I figure out broadcast
 
 class User {
   constructor(uid, username, email, passHash) {
@@ -49,7 +45,7 @@ const usersDB = {
     uid: 'u1ou',
     username: 'clinton',
     email: 'clint.pearce@rocketmail.com',
-    passHash: hashPass('test'),
+    passHash: hashPass('test', publicKey),
     created: Date.now(),
     sites: {
       lhL: {
@@ -70,7 +66,7 @@ const usersDB = {
     uid: 'test',
     username: 'admin',
     email: 'admin@ironmantle.ca',
-    passHash: hashPass('password'),
+    passHash: hashPass('password', publicKey),
     created: Date.now(),
     sites: {
       omb: {
@@ -89,9 +85,11 @@ const usersDB = {
   },
 };
 
+// like facebook but for lilLinks
 const linkBook = {};
 
 const linkBookBuilder = () => {
+  // eslint-disable-next-line array-callback-return
   Object.keys(usersDB).map((user) => {
     Object.keys(usersDB[user].sites).forEach((site) => {
       linkBook[site] = usersDB[user].sites[site];
@@ -110,13 +108,13 @@ app.get('/login', (req, res) => {
 // list all URLs
 app.get('/urls', (req, res) => {
   linkBookBuilder();
-  if (!req.cookies.uid) {
+  if (!req.session.uid) {
     res.render('login');
   } else {
     const templateVars = {
-      user: usersDB[req.cookies.uid],
+      user: usersDB[req.session.uid],
     };
-    res.render('urls_index', templateVars);
+    res.render('urlIndex', templateVars);
   }
 });
 
@@ -127,11 +125,11 @@ app.get('/debug', (req, res) => {
 
 // create a new URL
 app.get('/urls/new', (req, res) => {
-  if (!req.cookies.uid) {
+  if (!req.session.uid) {
     res.render('login');
   } else {
     const templateVars = {
-      user: usersDB[req.cookies.uid],
+      user: usersDB[req.session.uid],
     };
     res.render('urls_new', templateVars);
   }
@@ -140,16 +138,16 @@ app.get('/urls/new', (req, res) => {
 // examine a URL closer
 app.get('/urls/:shortURL', (req, res) => {
   const templateVars = {
-    user: usersDB[req.cookies.uid],
+    user: usersDB[req.session.uid],
     shortURL: req.params.shortURL,
   };
-  res.render('urls_show', templateVars);
+  res.render('urlExamine', templateVars);
 });
 
 // register / generate cookie
 app.get('/register', (req, res) => {
   const templateVars = {
-    user: usersDB[req.cookies.uid],
+    user: usersDB[req.session.uid],
   };
   res.render('register', templateVars);
 });
@@ -157,7 +155,7 @@ app.get('/register', (req, res) => {
 // go to URL long
 app.get('/:shortURL', (req, res) => {
   usersDB[linkBook[req.params.shortURL].user].sites[req.params.shortURL].visits += 1;
-  res.redirect(usersDB[req.cookies.uid].sites[req.params.shortURL].urlLong);
+  res.redirect(usersDB[linkBook[req.params.shortURL].user].sites[req.params.shortURL].urlLong);
 });
 
 // login post
@@ -167,15 +165,14 @@ app.post('/login', (req, res) => {
   } else {
     const usernameMatch = Object.keys(usersDB)
       .filter((user) => usersDB[user].username === req.body.username);
-    const passwordHash = hashPass(req.body.password);
-    // remove me later
+    const passwordHash = hashPass(req.body.password, publicKey);
     if (
       QuickEncrypt.decrypt(passwordHash, privateKey)
       === QuickEncrypt.decrypt(usersDB[usernameMatch].passHash, privateKey)) {
-      res.cookie('uid', usersDB[usernameMatch].uid);
+      req.session.uid = usersDB[usernameMatch].uid;
       res.redirect('/urls');
     } else {
-      res.redirect('login');
+      res.status(401).send('Wrong credentials!');
     }
   }
 });
@@ -191,9 +188,9 @@ app.post('/createUser', (req, res) => {
       uid,
       req.body.newUsername,
       req.body.email,
-      hashPass(req.body.password),
+      hashPass(req.body.password, publicKey),
     );
-    res.cookie('uid', uid);
+    req.session('uid', uid);
     res.redirect('/urls');
   }
 });
@@ -201,7 +198,7 @@ app.post('/createUser', (req, res) => {
 // add a new URL
 app.post('/urls', (req, res) => {
   const shortCode = genRandomString();
-  usersDB[req.cookies.uid].sites[shortCode] = {
+  usersDB[req.session.uid].sites[shortCode] = {
     urlShort: shortCode,
     urlLong: validateURL(req.body.longURL),
     visits: 0,
@@ -213,20 +210,20 @@ app.post('/urls', (req, res) => {
 
 // delete URL
 app.post('/:shortURL/delete', (req, res) => {
-  delete usersDB[req.cookies.uid].sites[req.params.shortURL];
+  delete usersDB[req.session.uid].sites[req.params.shortURL];
   res.redirect('/urls');
 });
 
 // update URL
 app.post('/:shortURL/update', (req, res) => {
-  usersDB[req.cookies.uid].sites[req.params.shortURL].urlLong = req.body.newURL;
+  usersDB[req.session.uid].sites[req.params.shortURL].urlLong = req.body.newURL;
   res.redirect('/urls');
 });
 
 // logout / clear cookie
 app.post('/logout', (req, res) => {
   // res.send(`You're logging in as ${req.body.username}`);
-  res.clearCookie('uid');
+  req.session = null;
   res.redirect('/urls');
 });
 
