@@ -19,7 +19,6 @@ First clone this to your local machine running Nodejs.  Then npm install the fol
 * ejs: "^3.1.5",
 * express: "^4.17.1",
 * quick-encrypt: "^1.0.8",
-* serve-favicon: "^2.5.0"
 
 ##### Screen Shots:
 ### Login
