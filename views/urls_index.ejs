@@ -12,31 +12,30 @@
   <link rel="icon" type="image/png" href="/img/meat.png" />
 </head>
 <body>
+  <% if (!user) user = {sites: {}} %>
   <%- include('partials/_header.ejs') -%>
   <div class="col-md-10 offset-md-1 my-3">
     <h3 class="text-center">My URLs</h3>
     <table class="table">
       <thead>
         <tr>
-          <th scope="col">Short URL</th>
-          <th scope="col">Long URL</th>
-          <th scope="col">Edit URL</th>
-          <th scope="col">Delete</th>
-          <th scope="col">Visits</th>
-          <th scope="col">Created</th>
+          <th scope="col" class="align-middle text-center">Short URL</th>
+          <th scope="col" class="align-middle text-center">Long URL</th>
+          <th scope="col" class="align-middle text-center">Visits</th>
+          <th scope="col" class="align-middle text-center">Created</th>
+          <th scope="col" class="align-middle text-center">Edit URL</th>
+          <th scope="col" class="align-middle text-center">Delete</th>
         </tr>
       </thead>
       <tbody>
         <% for (let url in user.sites) { %>
           <tr class="align-middle">
-            <td class="align-middle"><a href="urls/<%= url %>"><%= url %></a></td>
-            <td class="align-middle"><a href="<%= user.sites[url].longURL %>"><%= user.sites[url].urlLong %></a></td>
-            <td><a href="urls/<%= url %>"><button type="submit" class="btn btn-info">Edit</button></a></td>
-            <td><form method="POST" action="<%= url %>/delete"><button type="submit" class="btn btn-danger">Delete</button></form></td>
-            <td class="align-middle"><%= user.sites[url].visits %></td>
-            <% const date = new Date(user.sites[url].created) %>
-            <% const dateF = `${date.getUTCDay()}/${date.getMonth()}/${date.getUTCFullYear()}/${date.getUTCHours()}:${('0' + date.getUTCSeconds()).slice(-2)}` %>
-            <td class="align-middle"><%= dateF %></td>
+            <td class="align-middle text-center"><a href="urls/<%= url %>"><%= url %></a></td>
+            <td class="align-middle text-center"><a href="<%= user.sites[url].urlLong %>"><%= user.sites[url].urlLong %></a></td>
+            <td class="align-middle text-center"><%= user.sites[url].visits %></td>
+            <td class="align-middle text-center"><%= user.sites[url].created %></td>
+            <td class="align-middle text-center"><a href="urls/<%= url %>"><button type="submit" class="btn btn-info">Edit</button></a></td>
+            <td class="align-middle text-center"><form method="POST" action="<%= url %>/delete"><button type="submit" class="btn btn-danger">Delete</button></form></td>
           </tr>
         <% } %>
       </tbody>

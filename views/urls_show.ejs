@@ -7,14 +7,13 @@
   <title>Lil'Links - Examine URL</title>
   <link rel="icon" type="image/png" href="/img/meat.png" />
 </head>
-
 <body>
   <%- include('partials/_header.ejs') -%>
   <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
         <h5 class="card-title">TinyURL for: <a href="<%= user.sites[shortURL].urlLong %>"><%= user.sites[shortURL].urlLong %></a></h5>
-        <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
+        <p class="card-text">Short URL: <a href="/<%= shortURL %>"><%= shortURL %></a></p>
         <form class="form-inline justify-content-center mb-6" action="/<%= shortURL %>/update" method="POST">
           <div class="input-group mb-3 col-md-auto">
             <div class="input-group-prepend">
@@ -25,7 +24,6 @@
               <button class="btn btn-outline-success" method="POST" type="submit">Update URL</button>
             </div>
           </div>
-          
         </form>
       </div>
     <div class="card-footer text-muted"></div>

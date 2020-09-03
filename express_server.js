@@ -1,8 +1,13 @@
-// eslint-disable-next-line max-classes-per-file
+// eslint-disable-next-line no-console
+console.clear();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const bcrypt = require('bcrypt');
+const QuickEncrypt = require('quick-encrypt');
+
+const keys = QuickEncrypt.generate(1024); // Use either 2048 bits or 1024 bits.
+const publicKey = keys.public;
+const privateKey = keys.private;
 
 const app = express();
 const PORT = 8080;
@@ -17,11 +22,16 @@ app.use(cookieParser());
 // function pile
 const validateURL = (url) => (url.match(/^(https:\/\/|http:\/\/)/) ? url : `https://${url}`);
 const genRandomString = () => Math.random().toString(36).substring(3).slice(-4);
-const hashPass = (str) => {
-  const salt = bcrypt.genSaltSync(10);
-  const hash = bcrypt.hashSync(str, salt);
-  return hash;
+const dateParser = (date) => {
+  const d = new Date(date);
+  return `${d.getUTCDay()}
+  /${d.getMonth()}
+  /${d.getFullYear()}
+  /${d.getHours()}
+  :${d.getMinutes()}
+  :${(`0${d.getSeconds()}`).slice(-2)}`.replace(/\s/g, '');
 };
+const hashPass = (str) => QuickEncrypt.encrypt(str, publicKey);
 
 class User {
   constructor(uid, username, email, passHash) {
@@ -32,18 +42,11 @@ class User {
     this.created = Date.now();
     this.sites = {};
   }
-
-  addSite(siteURL) {
-    this.sites[genRandomString] = {};
-    this.sites[genRandomString].url = siteURL;
-    this.sites[genRandomString].visits = 0;
-    this.sites[genRandomString].created = Date.now();
-  }
 }
-
+// hardcoded user to test
 const usersDB = {
   u1ou: {
-    uid:'u1ou',
+    uid: 'u1ou',
     username: 'clinton',
     email: 'clint.pearce@rocketmail.com',
     passHash: hashPass('test'),
@@ -53,37 +56,85 @@ const usersDB = {
         urlShort: 'lhL',
         urlLong: 'https://www.lighthouselabs.ca',
         visits: 0,
-        created: Date.now(),
+        created: dateParser(Date.now()),
       },
       goo: {
         urlShort: 'goo',
         urlLong: 'https://www.google.ca',
         visits: 0,
-        created: Date.now(),
+        created: dateParser(Date.now()),
+      },
+    },
+  },
+  test: {
+    uid: 'test',
+    username: 'admin',
+    email: 'admin@ironmantle.ca',
+    passHash: hashPass('password'),
+    created: Date.now(),
+    sites: {
+      omb: {
+        urlShort: 'omb',
+        urlLong: 'https://ombi.ironmanlte.ca',
+        visits: 0,
+        created: dateParser(Date.now()),
+      },
+      go0: {
+        urlShort: 'go0',
+        urlLong: 'https://www.google.ca',
+        visits: 0,
+        created: dateParser(Date.now()),
       },
     },
   },
 };
 
+const linkBook = {};
+
+const linkBookBuilder = () => {
+  Object.keys(usersDB).map((user) => {
+    Object.keys(usersDB[user].sites).forEach((site) => {
+      linkBook[site] = usersDB[user].sites[site];
+      linkBook[site].user = user;
+    });
+  });
+};
+// build our initial linkBook
+linkBookBuilder();
+
+// login / generate cookie
+app.get('/login', (req, res) => {
+  res.render('login');
+});
+
 // list all URLs
 app.get('/urls', (req, res) => {
-  const templateVars = {
-    user: usersDB[req.cookies.uid],
-  };
-  res.render('urls_index', templateVars);
+  if (!req.cookies.uid) {
+    res.render('login');
+  } else {
+    const templateVars = {
+      user: usersDB[req.cookies.uid],
+    };
+    res.render('urls_index', templateVars);
+  }
 });
 
 // debug
 app.get('/debug', (req, res) => {
-  res.send(usersDB);
+  res.send(linkBook);
 });
 
 // create a new URL
 app.get('/urls/new', (req, res) => {
-  const templateVars = {
-    user: usersDB[req.cookies.uid],
-  };
-  res.render('urls_new', templateVars);
+  if (!req.cookies.uid) {
+    res.render('login');
+  } else {
+    const templateVars = {
+      user: usersDB[req.cookies.uid],
+    };
+    res.render('urls_new', templateVars);
+    linkBookBuilder();
+  }
 });
 
 // examine a URL closer
@@ -103,22 +154,48 @@ app.get('/register', (req, res) => {
   res.render('register', templateVars);
 });
 
-// create a new user
-app.post('/createUser', (req, res) => {
-  // req.body = { newUsername: 'X', email: 'Y', password: 'Z' }
-  const uid = genRandomString();
-  usersDB[uid] = new User(
-    uid,
-    req.body.newUsername,
-    req.body.email,
-    hashPass(req.body.password));
-  res.cookie('uid', uid);
-  res.redirect('/urls');
+// go to URL long
+app.get('/:shortURL', (req, res) => {
+  usersDB[linkBook[req.params.shortURL].user].sites[req.params.shortURL].visits += 1;
+  res.redirect(usersDB[req.cookies.uid].sites[req.params.shortURL].urlLong);
 });
 
-// go to URL long
-app.get('/u/:shortURL', (req, res) => {
-  res.redirect(urlDatabase[req.params.shortURL]);
+// login post
+app.post('/login', (req, res) => {
+  if (!req.body.username || !req.body.password) {
+    res.write('bad');
+  } else {
+    const usernameMatch = Object.keys(usersDB)
+      .filter((user) => usersDB[user].username === req.body.username);
+    const passwordHash = hashPass(req.body.password);
+    // remove me later
+    if (
+      QuickEncrypt.decrypt(passwordHash, privateKey)
+      === QuickEncrypt.decrypt(usersDB[usernameMatch].passHash, privateKey)) {
+      res.cookie('uid', usersDB[usernameMatch].uid);
+      res.redirect('/urls');
+    } else {
+      res.redirect('login');
+    }
+  }
+});
+
+// create a new user
+app.post('/createUser', (req, res) => {
+  const uid = genRandomString();
+  if (!req.body.newUsername || !req.body.email || !req.body.password) {
+    res.statusCode = 200;
+    res.send('Error, missing information');
+  } else {
+    usersDB[uid] = new User(
+      uid,
+      req.body.newUsername,
+      req.body.email,
+      hashPass(req.body.password),
+    );
+    res.cookie('uid', uid);
+    res.redirect('/urls');
+  }
 });
 
 // add a new URL
@@ -128,14 +205,14 @@ app.post('/urls', (req, res) => {
     urlShort: shortCode,
     urlLong: validateURL(req.body.longURL),
     visits: 0,
-    created: Date.now(),
+    created: dateParser(Date.now()),
   };
   res.redirect(`/urls/${shortCode}`);
 });
 
 // delete URL
 app.post('/:shortURL/delete', (req, res) => {
-  delete urlDatabase[req.body.shortURL];
+  delete usersDB[req.cookies.uid].sites[req.params.shortURL];
   res.redirect('/urls');
 });
 
@@ -145,15 +222,10 @@ app.post('/:shortURL/update', (req, res) => {
   res.redirect('/urls');
 });
 
-// login / generate cookie
-app.post('/login', (req, res) => {
-  res.redirect('/urls');
-});
-
 // logout / clear cookie
 app.post('/logout', (req, res) => {
   // res.send(`You're logging in as ${req.body.username}`);
-  res.clearCookie('username');
+  res.clearCookie('uid');
   res.redirect('/urls');
 });
 
