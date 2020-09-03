@@ -8,7 +8,7 @@ const {
   validateURL, genRandomString, dateParser, hashPass,
 } = require('./helperFunctions');
 
-// 1GB key baby
+// 1 0 2 4 B I T   K E Y   B A B Y ////////////////////////
 const keys = QuickEncrypt.generate(1024);
 const publicKey = keys.public;
 const privateKey = keys.private;
@@ -16,7 +16,7 @@ const privateKey = keys.private;
 const app = express();
 const PORT = 8080;
 
-// set app vars
+// E X P R E S S   A R G S ////////////////////////////////
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/img', express.static(`${__dirname}/public/img`));
@@ -27,8 +27,7 @@ app.use(cookieSession({
   keys: ['key1', 'key2'],
 }));
 
-// move to helpFunctions when I figure out broadcast
-
+// U S E R   C L A S S  ///////////////////////////////////
 class User {
   constructor(uid, username, email, passHash) {
     this.uid = uid;
@@ -40,7 +39,7 @@ class User {
   }
 }
 
-// hardcoded user to test
+// H A R D C O D E D   U S E R   D A T A //////////////////
 const usersDB = {
   u1ou: {
     uid: 'u1ou',
@@ -88,13 +87,10 @@ const usersDB = {
   },
 };
 
-// like facebook but for lilLinks
+// L I N K   M A P   &   M E T A D A T A   M A P S ////////
 const linkBook = {};
-// get a list of user email addresses!...
 const emails = [...Object.keys(usersDB).map((user) => usersDB[user].email)];
-// and usernames!
 const userNames = [...Object.keys(usersDB).map((user) => usersDB[user].username)];
-
 const linkBookBuilder = () => {
   // eslint-disable-next-line array-callback-return
   Object.keys(usersDB).map((user) => {
@@ -104,26 +100,26 @@ const linkBookBuilder = () => {
     });
   });
 };
-
-// build our initial linkBook
 linkBookBuilder();
 
-// for debug purposes only
+// G E T   R O U T E S ////////////////////////////////////
+
+// D E B U G   R O U T E   G E T
 app.get('/debug', (req, res) => {
   res.send(linkBook);
 });
 
-// login page
+// L O G I N   G E T
 app.get('/login', (req, res) => {
   res.render('login');
 });
 
-// register new account
+// R E G I S T E R   G E T
 app.get('/register', (req, res) => {
   res.render('register');
 });
 
-// list all user urls
+// I N D E X   G E T
 app.get('/urls', (req, res) => {
   linkBookBuilder();
   if (!req.session.uid) {
@@ -136,7 +132,7 @@ app.get('/urls', (req, res) => {
   }
 });
 
-// create a new URL
+// C R E A T E   U R L   G E T
 app.get('/urls/new', (req, res) => {
   if (!req.session.uid) {
     res.render('login');
@@ -148,7 +144,7 @@ app.get('/urls/new', (req, res) => {
   }
 });
 
-// examine a URL closer
+// E X A M I N E   U R L   G E T
 app.get('/urls/:shortURL', (req, res) => {
   if (!req.session.uid) {
     res.render('login');
@@ -162,10 +158,17 @@ app.get('/urls/:shortURL', (req, res) => {
   }
 });
 
-// login post
+// O H   F U C K   A N   E R R O R   G E T
+app.get('/error', (req, res) => {
+  res.render('ohShit');
+});
+
+// P O S T   R O U T E S //////////////////////////////////
+
+// L O G I N   P O S T
 app.post('/login', (req, res) => {
   if (!req.body.username || !req.body.password) {
-    res.status(401).send('All fields must be filled out!');
+    res.render('ohShit', { status: 400, error: 'All Data Fields Must Be Filled Out!' });
   } else {
     try {
       const usernameMatch = Object.keys(usersDB)
@@ -185,20 +188,20 @@ app.post('/login', (req, res) => {
   }
 });
 
-// logout / clear cookie
+// L O G O U T   &   C L E A R   C O O K I E   P O S T
 app.post('/logout', (req, res) => {
   // res.send(`You're logging in as ${req.body.username}`);
   req.session = null;
   res.redirect('/urls');
 });
 
-// create a new user
+// C R E A T E   U S E R   P O S T
 app.post('/createUser', (req, res) => {
   const uid = genRandomString();
   if (!req.body.newUsername || !req.body.email || !req.body.password) {
-    res.render('ohShit', { status: 200, error: 'Missing Required Information!' });
+    res.render('ohShit', { status: 400, error: 'Missing Required Information!' });
   } else if (emails.includes(req.body.email) || userNames.includes(req.body.newUsername)) {
-    res.render('ohShit', { status: 401, error: 'Username or Email already in Database!' });
+    res.render('ohShit', { status: 403, error: 'Username or Email already in Database!' });
   } else {
     usersDB[uid] = new User(
       uid,
@@ -211,12 +214,7 @@ app.post('/createUser', (req, res) => {
   }
 });
 
-// oh no!
-app.get('/error', (req, res) => {
-  res.render('ohShit');
-});
-
-// add a new URL
+// A D D   N E W   U R L   P O S T
 app.post('/urls', (req, res) => {
   const shortCode = genRandomString();
   usersDB[req.session.uid].sites[shortCode] = {
@@ -229,24 +227,25 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${shortCode}`);
 });
 
-// delete URL
+// D E L E T E   U R L   P O S T
 app.post('/:shortURL/delete', (req, res) => {
   delete usersDB[req.session.uid].sites[req.params.shortURL];
   res.redirect('/urls');
 });
 
-// update URL
+// U P D A T E   U R L   P O S T
 app.post('/:shortURL/update', (req, res) => {
   usersDB[req.session.uid].sites[req.params.shortURL].urlLong = req.body.newURL;
   res.redirect('/urls');
 });
 
-// go to URL long
+// G L O B A L   G O   T O   S H O R T U R L   G E T
 app.get('/:shortURL', (req, res) => {
   usersDB[linkBook[req.params.shortURL].user].sites[req.params.shortURL].visits += 1;
   res.redirect(usersDB[linkBook[req.params.shortURL].user].sites[req.params.shortURL].urlLong);
 });
 
+// S T A R T   T H E   L I S T E N E R
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`lil'Links listening on port ${PORT}!`);
