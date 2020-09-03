@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const QuickEncrypt = require('quick-encrypt');
 
-const keys = QuickEncrypt.generate(1024); // Use either 2048 bits or 1024 bits.
+const keys = QuickEncrypt.generate(2048); // Use either 2048 bits or 1024 bits.
 const publicKey = keys.public;
 const privateKey = keys.private;
 
@@ -109,6 +109,7 @@ app.get('/login', (req, res) => {
 
 // list all URLs
 app.get('/urls', (req, res) => {
+  linkBookBuilder();
   if (!req.cookies.uid) {
     res.render('login');
   } else {
@@ -133,7 +134,6 @@ app.get('/urls/new', (req, res) => {
       user: usersDB[req.cookies.uid],
     };
     res.render('urls_new', templateVars);
-    linkBookBuilder();
   }
 });
 
@@ -207,6 +207,7 @@ app.post('/urls', (req, res) => {
     visits: 0,
     created: dateParser(Date.now()),
   };
+  linkBookBuilder();
   res.redirect(`/urls/${shortCode}`);
 });
 
@@ -231,5 +232,5 @@ app.post('/logout', (req, res) => {
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`lil'Links listening on port ${PORT}!`);
 });
