@@ -148,6 +148,8 @@ app.get('/urls/new', (req, res) => {
 app.get('/urls/:shortURL', (req, res) => {
   if (!req.session.uid) {
     res.render('login');
+  } else if (req.session.uid !== linkBook[req.params.shortURL].user) {
+    res.render('ohShit', { status: 401, error: 'All Your lil\'Link Are NOT Beling To Us!' });
   } else {
     const templateVars = {
       user: usersDB[req.session.uid],
@@ -158,7 +160,7 @@ app.get('/urls/:shortURL', (req, res) => {
   }
 });
 
-// O H   F U C K   A N   E R R O R   G E T
+// O H   S H I T   A N   E R R O R   G E T
 app.get('/error', (req, res) => {
   res.render('ohShit');
 });
@@ -190,7 +192,6 @@ app.post('/login', (req, res) => {
 
 // L O G O U T   &   C L E A R   C O O K I E   P O S T
 app.post('/logout', (req, res) => {
-  // res.send(`You're logging in as ${req.body.username}`);
   req.session = null;
   res.redirect('/urls');
 });
@@ -239,10 +240,15 @@ app.post('/:shortURL/update', (req, res) => {
   res.redirect('/urls');
 });
 
-// G L O B A L   G O   T O   S H O R T U R L   G E T
+// G L O B A L   G O   T O   S H O R T   U R L   G E T
 app.get('/:shortURL', (req, res) => {
-  usersDB[linkBook[req.params.shortURL].user].sites[req.params.shortURL].visits += 1;
-  res.redirect(usersDB[linkBook[req.params.shortURL].user].sites[req.params.shortURL].urlLong);
+  linkBookBuilder();
+  if (!Object.keys(linkBook).includes(req.params.shortURL)) {
+    res.render('ohShit', { status: 404, error: 'That URL Does Not Exist Here Friend!' });
+  } else {
+    usersDB[linkBook[req.params.shortURL].user].sites[req.params.shortURL].visits += 1;
+    res.redirect(usersDB[linkBook[req.params.shortURL].user].sites[req.params.shortURL].urlLong);
+  }
 });
 
 // S T A R T   T H E   L I S T E N E R

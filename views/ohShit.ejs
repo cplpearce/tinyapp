@@ -31,10 +31,19 @@
     <div class="d-flex justify-content-center">
       <a href="/register"><button class="btn btn-info">Go back to Registration!</button></a>
     </div>
+    <small class="d-flex justify-content-center align-middle text-center my-2">or</small>
+    <div class="d-flex justify-content-center">
+      <a><button class="btn btn-danger" onclick="goBack()">Go Back!</button></a>
+    </div>
   </main>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script>
+    function goBack() {
+      window.history.back();
+    }
+  </script>
 </body>
 </html>
