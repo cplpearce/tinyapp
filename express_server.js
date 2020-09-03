@@ -39,6 +39,7 @@ class User {
     this.sites = {};
   }
 }
+
 // hardcoded user to test
 const usersDB = {
   u1ou: {
@@ -71,14 +72,16 @@ const usersDB = {
     sites: {
       omb: {
         urlShort: 'omb',
-        urlLong: 'https://ombi.ironmanlte.ca',
+        urlLong: 'https://ombi.ironmantle.ca',
         visits: 0,
+        unique: 0,
         created: dateParser(Date.now()),
       },
       go0: {
         urlShort: 'go0',
         urlLong: 'https://www.google.ca',
         visits: 0,
+        unique: 0,
         created: dateParser(Date.now()),
       },
     },
@@ -87,6 +90,10 @@ const usersDB = {
 
 // like facebook but for lilLinks
 const linkBook = {};
+// get a list of user email addresses!...
+const emails = [...Object.keys(usersDB).map((user) => usersDB[user].email)];
+// and usernames!
+const userNames = [...Object.keys(usersDB).map((user) => usersDB[user].username)];
 
 const linkBookBuilder = () => {
   // eslint-disable-next-line array-callback-return
@@ -97,15 +104,26 @@ const linkBookBuilder = () => {
     });
   });
 };
+
 // build our initial linkBook
 linkBookBuilder();
 
-// login / generate cookie
+// for debug purposes only
+app.get('/debug', (req, res) => {
+  res.send(linkBook);
+});
+
+// login page
 app.get('/login', (req, res) => {
   res.render('login');
 });
 
-// list all URLs
+// register new account
+app.get('/register', (req, res) => {
+  res.render('register');
+});
+
+// list all user urls
 app.get('/urls', (req, res) => {
   linkBookBuilder();
   if (!req.session.uid) {
@@ -116,11 +134,6 @@ app.get('/urls', (req, res) => {
     };
     res.render('urlIndex', templateVars);
   }
-});
-
-// debug
-app.get('/debug', (req, res) => {
-  res.send(linkBook);
 });
 
 // create a new URL
@@ -137,52 +150,55 @@ app.get('/urls/new', (req, res) => {
 
 // examine a URL closer
 app.get('/urls/:shortURL', (req, res) => {
-  const templateVars = {
-    user: usersDB[req.session.uid],
-    shortURL: req.params.shortURL,
-  };
-  res.render('urlExamine', templateVars);
-});
-
-// register / generate cookie
-app.get('/register', (req, res) => {
-  const templateVars = {
-    user: usersDB[req.session.uid],
-  };
-  res.render('register', templateVars);
-});
-
-// go to URL long
-app.get('/:shortURL', (req, res) => {
-  usersDB[linkBook[req.params.shortURL].user].sites[req.params.shortURL].visits += 1;
-  res.redirect(usersDB[linkBook[req.params.shortURL].user].sites[req.params.shortURL].urlLong);
+  if (!req.session.uid) {
+    res.render('login');
+  } else {
+    const templateVars = {
+      user: usersDB[req.session.uid],
+      site: linkBook[req.params.shortURL],
+      shortURL: req.params.shortURL,
+    };
+    res.render('urlExamine', templateVars);
+  }
 });
 
 // login post
 app.post('/login', (req, res) => {
   if (!req.body.username || !req.body.password) {
-    res.write('bad');
+    res.status(401).send('All fields must be filled out!');
   } else {
-    const usernameMatch = Object.keys(usersDB)
-      .filter((user) => usersDB[user].username === req.body.username);
-    const passwordHash = hashPass(req.body.password, publicKey);
-    if (
-      QuickEncrypt.decrypt(passwordHash, privateKey)
-      === QuickEncrypt.decrypt(usersDB[usernameMatch].passHash, privateKey)) {
-      req.session.uid = usersDB[usernameMatch].uid;
-      res.redirect('/urls');
-    } else {
-      res.status(401).send('Wrong credentials!');
+    try {
+      const usernameMatch = Object.keys(usersDB)
+        .filter((user) => usersDB[user].username === req.body.username);
+      const passwordHash = hashPass(req.body.password, publicKey);
+      if (
+        QuickEncrypt.decrypt(passwordHash, privateKey)
+        === QuickEncrypt.decrypt(usersDB[usernameMatch].passHash, privateKey)) {
+        req.session.uid = usersDB[usernameMatch].uid;
+        res.redirect('/urls');
+      } else {
+        res.render('ohShit', { status: 401, error: 'Wrong Credentials!' });
+      }
+    } catch (err) {
+      res.render('ohShit', { status: 401, error: 'Wrong Credentials!' });
     }
   }
+});
+
+// logout / clear cookie
+app.post('/logout', (req, res) => {
+  // res.send(`You're logging in as ${req.body.username}`);
+  req.session = null;
+  res.redirect('/urls');
 });
 
 // create a new user
 app.post('/createUser', (req, res) => {
   const uid = genRandomString();
   if (!req.body.newUsername || !req.body.email || !req.body.password) {
-    res.statusCode = 200;
-    res.send('Error, missing information');
+    res.render('ohShit', { status: 200, error: 'Missing Required Information!' });
+  } else if (emails.includes(req.body.email) || userNames.includes(req.body.newUsername)) {
+    res.render('ohShit', { status: 401, error: 'Username or Email already in Database!' });
   } else {
     usersDB[uid] = new User(
       uid,
@@ -190,9 +206,14 @@ app.post('/createUser', (req, res) => {
       req.body.email,
       hashPass(req.body.password, publicKey),
     );
-    req.session('uid', uid);
+    req.session.uid = uid;
     res.redirect('/urls');
   }
+});
+
+// oh no!
+app.get('/error', (req, res) => {
+  res.render('ohShit');
 });
 
 // add a new URL
@@ -220,11 +241,10 @@ app.post('/:shortURL/update', (req, res) => {
   res.redirect('/urls');
 });
 
-// logout / clear cookie
-app.post('/logout', (req, res) => {
-  // res.send(`You're logging in as ${req.body.username}`);
-  req.session = null;
-  res.redirect('/urls');
+// go to URL long
+app.get('/:shortURL', (req, res) => {
+  usersDB[linkBook[req.params.shortURL].user].sites[req.params.shortURL].visits += 1;
+  res.redirect(usersDB[linkBook[req.params.shortURL].user].sites[req.params.shortURL].urlLong);
 });
 
 app.listen(PORT, () => {

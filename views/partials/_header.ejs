@@ -1,43 +1,32 @@
 <header>
-  <% username = !user ? username = "Anonymous" : username = user.username %>
+  <% try { %>
+  <%   username = user.username %>
   <nav class="navbar navbar-expand-md navbar-dark bg-info">
     <img src="/img/meat.png" width="30" height="30" alt="">
     <a class="navbar-brand mx-1" href="/urls">Lil'Links</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <% if (user === "Anonymous") { %>
-      <form class="form-inline" method="POST" action="/login">
-        <div class="input-group">
-          <div class="input-group-prepend">
-            <span class="input-group-text">Not Logged In</span>
-          </div>
-          <input class="input-group form-control" name="username" type="login" placeholder="">
-          <div class="input-group-append">
-            <button class="input-group btn btn-warning" type="submit">Login</button>
-          </div>
-        </div>
-      </form>
-      <br>  
-      <form method="GET" action="/register">
-        <div class="px-2">
-          <button class="input-group btn btn-success" type="submit">Register</button>
-        </div>
-      </form>
-    <% } else { %>
-      <form class="form-inline" method="POST" action="/logout" >
-        <div class="input-group">
-          <span class=" p-2"><small>Logged in as:</small> <%= username %></span>
-        </div>
-        <button class="input-group btn btn-warning" type="submit">Log Off</button>
-      </form>
-      <% } %>
-    </div>
+    <br>
+    <form class="form-inline" method="POST" action="/logout" >
+      <div class="input-group">
+        <span class=" p-2"><small>Logged in as:</small> <%= username %></span>
+      </div>
+      <button class="input-group btn btn-warning" type="submit">Log Off</button>
+    </form>
+    <% } catch (err) { %>
+    <nav class="navbar navbar-expand-md navbar-dark bg-info">
+      <img src="/img/meat.png" width="30" height="30" alt="">
+      <a class="navbar-brand mx-1" href="/urls">Lil'Links</a>
+      <br>
+      <div class="input-group">
+        <span class=" p-2">Not Logged in!</span>
+      </div>
+      <a href="/login"><button class="input-group btn btn-warning">Log In</button></a>
+    <% } %>
   </nav>
 </header>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@1,300;1,400&display=swap" rel="stylesheet">
+  <title>Lil'Links - Error!</title>
+  <link rel="icon" type="image/png" href="/img/meat.png" />
+</head>
+<body>
+  <header>
+    <nav class="navbar navbar-expand-md navbar-dark bg-info">
+      <img src="/img/meat.png" width="30" height="30" alt="">
+      <a class="navbar-brand mx-1" href="/urls">Lil'Links</a>
+    </nav>
+  </header>  <main class="my-3">
+    <div class="col-6 offset-md-3 text-center my-3"">
+      <h5 class="text-center font-weight-bold">So something bad happend :(</h5>
+      <img class="mx-auto d-block" src="/img/sadMeat.png" width="100" height="100">
+      <br>
+      <h2><strong><%= status %></strong></h2><br>
+      <h3><%= error %></h3>
+    </div>
+    <br>
+    <div class="d-flex justify-content-center">
+      <a href="/login"><button class="btn btn-success">Go back to Login!</button></a>
+    </div>
+    <small class="d-flex justify-content-center align-middle text-center my-2">or</small>
+    <div class="d-flex justify-content-center">
+      <a href="/register"><button class="btn btn-info">Go back to Registration!</button></a>
+    </div>
+  </main>
+  <!-- Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>

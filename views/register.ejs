@@ -9,8 +9,12 @@
   <title>Lil'Links - Register Account</title>
 </head>
 <body>
-  <%- include('partials/_header.ejs') -%>
-  <main class="my-3">
+  <header>
+    <nav class="navbar navbar-expand-md navbar-dark bg-info">
+      <img src="/img/meat.png" width="30" height="30" alt="">
+      <a class="navbar-brand mx-1" href="/urls">Lil'Links</a>
+    </nav>
+  </header>  <main class="my-3">  <main class="my-3">
     <h5 class="text-center">So You Want to Register Some Kick-Ass lil'Links</h5>
     <br>
     <form action="/createUser" method="POST">
@@ -34,10 +38,14 @@
           <input type="password" autocomplete="off" class="form-control" name="password" placeholder="">
         </div>
         <div class="d-flex justify-content-center">
-          <button class="btn btn-success" type="submit">Create Lil'Links Account</button>
+          <button class="btn btn-info" type="submit">Create Lil'Links Account</button>
         </div>
       </div>
     </form>
+    <small class="d-flex justify-content-center align-middle text-center my-2">or</small>
+    <div class="d-flex justify-content-center">
+      <a href="/login"><button class="btn btn-success">Login!</button></a>
+    </div>
   </main>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
