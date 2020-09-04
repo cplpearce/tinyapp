@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-console
 console.clear();
 const express = require('express');
 // for parsing body objects
@@ -103,7 +102,6 @@ const usersDB = {
 const emails = [...Object.keys(usersDB).map((user) => usersDB[user].email)];
 const linkBook = {};
 const linkBookBuilder = () => {
-  // eslint-disable-next-line array-callback-return
   Object.keys(usersDB).map((user) => {
     Object.keys(usersDB[user].sites).forEach((site) => {
       linkBook[site] = usersDB[user].sites[site];
@@ -174,7 +172,7 @@ app.get('/urls/new', (req, res) => {
 // examine details of url
 app.get('/urls/:shortURL', (req, res) => {
   if (!req.session.uid) {
-    res.redirect('login');
+    res.redirect('/login');
   } else if (!Object.keys(linkBook).includes(req.params.shortURL)) {
     res.render('errorPage', { status: 404, error: 'Sorry that link doesn\'t exist!' });
   } else if (req.session.uid !== linkBook[req.params.shortURL].user) {
@@ -312,6 +310,5 @@ app.get('/u/:shortURL', (req, res) => {
 
 // S T A R T   T H E   L I S T E N E R
 app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
   console.log(`lil'Links listening on port ${PORT}!`);
 });
