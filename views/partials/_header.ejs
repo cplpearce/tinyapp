@@ -1,6 +1,6 @@
 <header>
   <% try { %>
-  <%   username = user.username %>
+  <%   email = user.email %>
   <nav class="navbar navbar-expand-md navbar-dark bg-info">
     <img src="/img/meat.png" width="30" height="30" alt="">
     <a class="navbar-brand mx-1" href="/urls">Lil'Links</a>
@@ -14,7 +14,7 @@
     <br>
     <form class="form-inline" method="POST" action="/logout" >
       <div class="input-group">
-        <span class=" p-2"><small>Logged in as:</small> <%= username %></span>
+        <span class=" p-2"><small>Logged in as:</small> <%= email %></span>
       </div>
       <button class="input-group btn btn-warning" type="submit">Log Off</button>
     </form>
@@ -25,6 +25,8 @@
       <br>
       <div class="input-group">
         <span class=" p-2">Not Logged in!</span>
+        <button href="/login">Login</button>
+        <button href="/register">Register</button>
       </div>
       <a href="/login"><button class="input-group btn btn-warning">Log In</button></a>
     <% } %>

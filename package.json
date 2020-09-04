@@ -23,7 +23,7 @@
     "cookie-session": "^1.4.0",
     "ejs": "^3.1.5",
     "express": "^4.17.1",
-    "quick-encrypt": "^1.0.8",
+    "quick-encrypt": "^1.0.8"
   },
   "devDependencies": {
     "nodemon": "^2.0.4"
