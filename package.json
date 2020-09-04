@@ -24,7 +24,6 @@
     "ejs": "^3.1.5",
     "express": "^4.17.1",
     "quick-encrypt": "^1.0.8",
-    "serve-favicon": "^2.5.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.4"
