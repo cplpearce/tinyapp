@@ -195,7 +195,7 @@ app.get('/error', (req, res) => {
 // P O S T   R O U T E S //////////////////////////////////
 
 // L O G I N   P O S T
-// post login credentials 
+// post login credentials
 app.post('/login', (req, res) => {
   // if the info isn't filled in
   if (!req.body.email || !req.body.password) {
