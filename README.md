@@ -1,8 +1,8 @@
-# lil'Links (aka tinyApp)
-![lil'Links](https://nextcloud.ironmantle.ca/s/psdd2mDzWX2DTbr/preview)
-#### So you have a lot of long links?
-#### You need a fine little link shortener!
-### It's called lil'Links!
+<p align="center" ><b>lil'Links (aka tinyApp)</b></p>
+<p align="center"><img width="200" height="200" src="https://nextcloud.ironmantle.ca/s/psdd2mDzWX2DTbr/preview"></p>
+<p align="center" ><b>So you have a lot of long links?</b></p>
+<p align="center" ><b>You need a fine little link shortener!</b></p>
+<p align="center" ><b>Try this!  It's called lil'Links!</b></p>
 
 ##### What:
 lil'Links is a link shortener that you run locally to create short links.  The shortlinks are tied to individual user accounts and include 1024bit password encryption, as well as cookie session management.
