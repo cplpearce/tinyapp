@@ -230,14 +230,22 @@ app.post('/urls', (req, res) => {
 
 // D E L E T E   U R L   P O S T
 app.post('/:shortURL/delete', (req, res) => {
-  delete usersDB[req.session.uid].sites[req.params.shortURL];
-  res.redirect('/urls');
+  if (req.session.uid === linkBook[req.params.shortURL].user) {
+    delete usersDB[req.session.uid].sites[req.params.shortURL];
+    res.redirect('/urls');
+  } else {
+    res.render({ status: 401, error: 'All Your lil\'Link Are NOT Beling To Us!' });
+  }
 });
 
 // U P D A T E   U R L   P O S T
 app.post('/:shortURL/update', (req, res) => {
-  usersDB[req.session.uid].sites[req.params.shortURL].urlLong = req.body.newURL;
-  res.redirect('/urls');
+  if (req.session.uid === linkBook[req.params.shortURL].user) {
+    usersDB[req.session.uid].sites[req.params.shortURL].urlLong = req.body.newURL;
+    res.redirect('/urls');
+  } else {
+    res.render({ status: 401, error: 'All Your lil\'Link Are NOT Beling To Us!' });
+  }
 });
 
 // G L O B A L   G O   T O   S H O R T   U R L   G E T
