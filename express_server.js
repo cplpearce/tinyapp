@@ -1,18 +1,17 @@
-console.clear();
 const express = require('express');
 // for parsing body objects
 const bodyParser = require('body-parser');
 // encrypted cookie sessions
 const cookieSession = require('cookie-session');
 // 1024/2048 bit encyrption
-const QuickEncrypt = require('quick-encrypt');
+const quickEncrypt = require('quick-encrypt');
 // helper function import
 const {
   validateURL, genRandomString, dateParser, hashPass,
 } = require('./helperFunctions');
 
 // 1 0 2 4 B I T   K E Y //////////////////////////////////
-const keys = QuickEncrypt.generate(1024);
+const keys = quickEncrypt.generate(1024);
 const publicKey = keys.public;
 const privateKey = keys.private;
 
@@ -37,7 +36,7 @@ app.use(cookieSession({
 }));
 
 // U S E R   C L A S S  ///////////////////////////////////
-// user class the initiates uid, email, hash, and date created
+// user class initiates uid, email, hash, and date created
 class User {
   constructor(uid, email, passHash) {
     this.uid = uid;
@@ -209,8 +208,8 @@ app.post('/login', (req, res) => {
         .filter((user) => usersDB[user].email === req.body.email);
       const passwordHash = hashPass(req.body.password, publicKey);
       if (
-        QuickEncrypt.decrypt(passwordHash, privateKey)
-        === QuickEncrypt.decrypt(usersDB[emailMatch].passHash, privateKey)) {
+        quickEncrypt.decrypt(passwordHash, privateKey)
+        === quickEncrypt.decrypt(usersDB[emailMatch].passHash, privateKey)) {
         req.session.uid = usersDB[emailMatch].uid;
         res.redirect('/urls');
       } else {
