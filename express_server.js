@@ -1,14 +1,18 @@
 // eslint-disable-next-line no-console
 console.clear();
 const express = require('express');
+// for parsing body objects
 const bodyParser = require('body-parser');
+// encrypted cookie sessions
 const cookieSession = require('cookie-session');
+// 1024/2048 bit encyrption
 const QuickEncrypt = require('quick-encrypt');
+// helper function import
 const {
   validateURL, genRandomString, dateParser, hashPass,
 } = require('./helperFunctions');
 
-// 1 0 2 4 B I T   K E Y   B A B Y ////////////////////////
+// 1 0 2 4 B I T   K E Y //////////////////////////////////
 const keys = QuickEncrypt.generate(1024);
 const publicKey = keys.public;
 const privateKey = keys.private;
@@ -17,17 +21,24 @@ const app = express();
 const PORT = 8080;
 
 // E X P R E S S   A R G S ////////////////////////////////
+// Nodejs express args
+
+// use ejs engine
 app.set('view engine', 'ejs');
+// setup body parser, get all tags
 app.use(bodyParser.urlencoded({ extended: true }));
+// public mapping of /img for images
 app.use('/img', express.static(`${__dirname}/public/img`));
+// public mapping of /public
 app.use(express.static('public'));
-app.set('trust proxy', 1);
+// set keys for sessions
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2'],
 }));
 
 // U S E R   C L A S S  ///////////////////////////////////
+// user class the initiates uid, email, hash, and date created
 class User {
   constructor(uid, email, passHash) {
     this.uid = uid;
@@ -39,6 +50,7 @@ class User {
 }
 
 // H A R D C O D E D   U S E R   D A T A //////////////////
+// two sample user accounts for debugging
 const usersDB = {
   u1ou: {
     uid: 'u1ou',
@@ -85,8 +97,11 @@ const usersDB = {
 };
 
 // L I N K   M A P   &   M E T A D A T A   M A P S ////////
-const linkBook = {};
+// a map to map user accounts and sites, to easy to read objects
+// if a relational database was used this wouldn't matter but in
+// this case it's easier than ...Object.keys() spread methods every time
 const emails = [...Object.keys(usersDB).map((user) => usersDB[user].email)];
+const linkBook = {};
 const linkBookBuilder = () => {
   // eslint-disable-next-line array-callback-return
   Object.keys(usersDB).map((user) => {
@@ -96,11 +111,13 @@ const linkBookBuilder = () => {
     });
   });
 };
+// run linkBookBuilder to initialize the linkBook Object
 linkBookBuilder();
 
 // G E T   R O U T E S ////////////////////////////////////
 
 // C A T C H A L L   G E T
+// root directory route
 app.get('/', (req, res) => {
   if (!req.session.uid) {
     res.redirect('/login');
@@ -115,12 +132,14 @@ app.get('/debug', (req, res) => {
 });
 
 // L O G I N   G E T
+// login to tinyApp
 app.get('/login', (req, res) => {
   if (req.session.uid) res.redirect('urls');
   res.render('login');
 });
 
 // R E G I S T E R   G E T
+// register a new account
 app.get('/register', (req, res) => {
   res.render('register');
 });
@@ -139,6 +158,7 @@ app.get('/urls', (req, res) => {
 });
 
 // C R E A T E   U R L   G E T
+// create a new url route
 app.get('/urls/new', (req, res) => {
   if (!req.session.uid) {
     res.render('login');
@@ -151,6 +171,7 @@ app.get('/urls/new', (req, res) => {
 });
 
 // E X A M I N E   U R L   G E T
+// examine details of url
 app.get('/urls/:shortURL', (req, res) => {
   if (!req.session.uid) {
     res.redirect('login');
@@ -169,6 +190,7 @@ app.get('/urls/:shortURL', (req, res) => {
 });
 
 //  E R R O R   G E T
+// error page if not directed automatically
 app.get('/error', (req, res) => {
   res.render('errorPage');
 });
@@ -176,10 +198,14 @@ app.get('/error', (req, res) => {
 // P O S T   R O U T E S //////////////////////////////////
 
 // L O G I N   P O S T
+// post login credentials 
 app.post('/login', (req, res) => {
+  // if the info isn't filled in
   if (!req.body.email || !req.body.password) {
     res.render('errorPage', { status: 400, error: 'All Data Fields Must Be Filled Out!' });
   } else {
+    // match the email and plaintext password to the
+    // unencrypted password matching this email
     try {
       const emailMatch = Object.keys(usersDB)
         .filter((user) => usersDB[user].email === req.body.email);
@@ -199,18 +225,23 @@ app.post('/login', (req, res) => {
 });
 
 // L O G O U T   &   C L E A R   C O O K I E   P O S T
+// logout and clear cookie session
 app.post('/logout', (req, res) => {
   req.session = null;
   res.redirect('/login');
 });
 
 // C R E A T E   U S E R   P O S T
+// register new user post route
 app.post('/register', (req, res) => {
   const uid = genRandomString();
+  // if the req fields are filled, error
   if (!req.body.email || !req.body.password) {
     res.render('errorPage', { status: 400, error: 'Missing Required Information!' });
+    // if the known emails include this email, error
   } else if (emails.includes(req.body.email)) {
     res.render('errorPage', { status: 403, error: 'Email already in Database!' });
+    // add the new user by class
   } else {
     usersDB[uid] = new User(
       uid,
@@ -223,6 +254,7 @@ app.post('/register', (req, res) => {
 });
 
 // A D D   N E W   U R L   P O S T
+// post a new url to the current logged in account
 app.post('/urls', (req, res) => {
   if (!req.session.uid) res.render({ status: 400, error: 'You need to be logged in to do that!' });
   const shortCode = genRandomString();
@@ -232,11 +264,14 @@ app.post('/urls', (req, res) => {
     visits: 0,
     created: dateParser(Date.now()),
   };
+  // rebuild the link database
   linkBookBuilder();
   res.redirect(`/urls/${shortCode}`);
 });
 
 // D E L E T E   U R L   P O S T
+// delete url, not DELETE method but same results
+// manually delete via object deletion
 app.post('/:shortURL/delete', (req, res) => {
   if (req.session.uid === linkBook[req.params.shortURL].user) {
     delete usersDB[req.session.uid].sites[req.params.shortURL];
@@ -247,20 +282,26 @@ app.post('/:shortURL/delete', (req, res) => {
 });
 
 // U P D A T E   U R L   P O S T
+// update url, not PUT method but same results
+// manually reassign the target full url
 app.post('/:shortURL/update', (req, res) => {
   if (!req.session.uid) {
     res.render({ status: 400, error: 'You need to be logged in!' });
+    // if current user matches the shortURL owner, update it
   } else if (req.session.uid === linkBook[req.params.shortURL].user) {
     usersDB[req.session.uid].sites[req.params.shortURL].urlLong = req.body.newURL;
     res.redirect('/urls');
+    // if the current user and shortURL owner don't match, error
   } else {
     res.render({ status: 401, error: 'All Your lil\'Link Are NOT Beling To Us!' });
   }
 });
 
 // G L O B A L   G O   T O   S H O R T   U R L   G E T
+// go to target longURL of short link
 app.get('/u/:shortURL', (req, res) => {
   linkBookBuilder();
+  // if the shortened url doesn't exist, error
   if (!Object.keys(linkBook).includes(req.params.shortURL)) {
     res.render('errorPage', { status: 404, error: 'That URL Does Not Exist Here Friend!' });
   } else {
