@@ -172,7 +172,7 @@ app.get('/urls/new', (req, res) => {
 // examine details of url
 app.get('/urls/:shortURL', (req, res) => {
   if (!req.session.uid) {
-    res.redirect('/login');
+    res.render('errorPage', { status: 400, error: 'You need to be logged in to do that!' });
   } else if (!Object.keys(linkBook).includes(req.params.shortURL)) {
     res.render('errorPage', { status: 404, error: 'Sorry that link doesn\'t exist!' });
   } else if (req.session.uid !== linkBook[req.params.shortURL].user) {
