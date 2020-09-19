@@ -6,7 +6,7 @@ const validateURL = (url) => (url.match(/^(https:\/\/|http:\/\/)/) ? url : `http
 // G E N   A   R A N D O M   5   C H A R   S T R I N G ////
 const genRandomString = () => Math.random().toString(36).substring(3).slice(-5);
 
-// F I X   S T U P I D   D A T E   O B J E C T S //////////
+// F I X   D A T E   O B J E C T S //////////
 const dateParser = (date) => {
   const d = new Date(date);
   return `${d.getUTCDay()}
