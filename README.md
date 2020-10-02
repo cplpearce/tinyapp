@@ -1,5 +1,5 @@
 <p align="center" ><b>lil'Links (aka tinyApp)</b></p>
-<p align="center"><img width="200" height="200" src="https://nextcloud.ironmantle.ca/s/psdd2mDzWX2DTbr/preview"></p>
+<p align="center"><img width="200" height="200" src="https://github.com/cplpearce/tinyapp/blob/master/public/img/meat.png"></p>
 <p align="center" ><b>So you have a lot of long links?</b></p>
 <p align="center" ><b>You need a fine little link shortener!</b></p>
 <p align="center" ><b>Try this!  It's called lil'Links!</b></p>

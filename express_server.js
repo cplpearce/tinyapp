@@ -96,8 +96,6 @@ const usersDB = {
 
 // L I N K   M A P   &   M E T A D A T A   M A P S ////////
 // a map to map user accounts and sites, to easy to read objects
-// if a relational database was used this wouldn't matter but in
-// this case it's easier than ...Object.keys() spread methods every time
 const emails = [...Object.keys(usersDB).map((user) => usersDB[user].email)];
 const linkBook = {};
 const linkBookBuilder = () => {
@@ -142,6 +140,7 @@ app.get('/register', (req, res) => {
 });
 
 // I N D E X   G E T
+// view URLS
 app.get('/urls', (req, res) => {
   linkBookBuilder();
   if (!req.session.uid) {

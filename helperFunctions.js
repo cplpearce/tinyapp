@@ -20,7 +20,7 @@ const dateParser = (date) => {
 // H A S H   A   P A S S W O R D //////////////////////////
 const hashPass = (str, publicKey) => QuickEncrypt.encrypt(str, publicKey);
 
-// Y E E T   O U R   M O D U L E S   T O   E X P R E S S //
+// E X P O R T   O U R   M O D U L E S   T O   E X P R E S S //
 module.exports = {
   validateURL, genRandomString, dateParser, hashPass,
 };
